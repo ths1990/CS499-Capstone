@@ -24,6 +24,17 @@ public class Main {
         System.out.println("3. EXIT the program.");
         return;
     }
+
+    public static void DisplayClients(){
+        System.out.println("Displaying all clients...");
+        return;
+    }
+
+    public static void ChangeClientChoice(){
+        System.out.println("Changing a client's choice...");
+        return;
+    }
+
     public static void main(String[] args) {
 
         int MAX_ATTEMPTS = 3;
@@ -53,13 +64,10 @@ public class Main {
             choice = InputValidators.validateNumericInput();
             switch(choice){
                 case 1:
-                
-                    System.out.println("Displaying all clients...");
-                    //TO DO: DisplayClients();
+                    DisplayClients();
                     break;
                 case 2:
-                    System.out.println("Changing a client's choice...");
-                    //TO DO: ChangeClientChoice();
+                    ChangeClientChoice();
                     break;
                 case 3:
                     System.out.println("Exiting the program...");
