@@ -33,7 +33,6 @@ public class Main {
         System.out.println("1. DISPLAY all clients.");
         System.out.println("2. CHANGE a client's choice.");
         System.out.println("3. EXIT the program.");
-        return;
     }
 
     public static void DisplayClients(){
@@ -41,7 +40,6 @@ public class Main {
         for(Clients client : clients){
             System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
         }
-        return;
     }
 
     public static void ChangeClientChoice(int id){
@@ -91,7 +89,6 @@ public class Main {
                 }
             } else{
                 System.out.println("Too many failed login attempts. Please try again later.");
-                return;
             }
          }
 
@@ -116,6 +113,5 @@ public class Main {
                     System.out.println("Invalid choice. Please try again.");
             }
          }
-         return;
     }
 }
