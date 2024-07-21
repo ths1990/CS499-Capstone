@@ -34,7 +34,7 @@ public class Main {
         System.out.println("2. CHANGE a client's choice.");
         System.out.println("3. EXIT the program.");
     }
-
+    
     public static void DisplayClients(){
         System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
         for(Clients client : clients){
@@ -42,7 +42,9 @@ public class Main {
         }
     }
 
+
     public static void ChangeClientChoice(int id){
+        // Find the client by client ID
         Clients client = clients.stream().filter(c -> c.getClientId() == id).findFirst().orElse(null);
         if(client != null){
             System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
@@ -50,7 +52,9 @@ public class Main {
             int oldServiceCode = client.getServiceCode();
             while(true){
                 serviceCode = InputValidators.validateNumericInput();
+                // Check to see if serviceCode input is a valid choice
                 if(serviceCode == 1 || serviceCode == 2){
+                    // Check if the client's choice is already set to the new service code
                     if(serviceCode == oldServiceCode){
                         System.out.println("Client's choice is already set to " + serviceCode + ". Please enter a different service code.");
                     } else
@@ -71,14 +75,15 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int MAX_ATTEMPTS = 3;
-        int loginAttempts = 0;
+        int MAX_ATTEMPTS = 3; // Maximum number of login attempts
+        int loginAttempts = 0; // Keeps track of login attempts
         boolean authenticated = false;
         int choice = 0;
 
          System.out.println("Welcome to the Capstone Project!");
 
          while(!authenticated){
+            //Prevent brute force attacks by limiting the number of login attempts
             if(loginAttempts < MAX_ATTEMPTS){
                 if(CheckPermission()){
                     authenticated = true;
