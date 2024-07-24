@@ -29,6 +29,25 @@ public class InputValidators {
         return password;
     }
 
+    public static String validateNameInput() {
+        String name = scanner.nextLine().trim();
+        // Regular expression to check if name contains only letters and spaces
+        String namePattern = "^[\\p{L} .'-]+$";
+        int MAX_LENGTH = 50; // Example maximum length
+    
+        while (name.isEmpty() || !name.matches(namePattern) || name.length() > MAX_LENGTH) {
+            if (name.isEmpty()) {
+                System.out.println("Name cannot be empty. Please enter a valid name.");
+            } else if (!name.matches(namePattern)) {
+                System.out.println("Name can only contain letters, spaces, periods, apostrophes, and hyphens. Please enter a valid name.");
+            } else if (name.length() > MAX_LENGTH) {
+                System.out.println("Name cannot be longer than " + MAX_LENGTH + " characters. Please enter a valid name.");
+            }
+            name = scanner.nextLine().trim();
+        }
+        return name;
+    }
+
     public static int validateNumericInput() {
         int input = 0;
         while (true) {

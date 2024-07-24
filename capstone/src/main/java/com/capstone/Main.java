@@ -1,8 +1,12 @@
 package com.capstone;
-import java.util.ArrayList;
+//import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
-    private static ArrayList<Clients> clients = new ArrayList<>();
+    // private static ArrayList<Clients> clients = new ArrayList<>();
+    private static Map<Integer, Clients> clients = new HashMap<>();
+    
 
     public static boolean CheckPermission(){
         System.out.println("Enter your username: ");
@@ -18,59 +22,135 @@ public class Main {
             return false;
         }
     }
+        // clients.add(new Clients(1, "Bob Jones", 1));
+        // clients.add(new Clients(2, "Sarah Davis", 2));
+        // clients.add(new Clients(3, "Amy Friendly", 1));
+        // clients.add(new Clients(4, "Johny Smith", 1));
+        // clients.add(new Clients(5, "Carol Spears", 2));
     
     // Using hardcoded clients for now to test the program
     public static void LoadClients(){
-        clients.add(new Clients(1, "Bob Jones", 1));
-        clients.add(new Clients(2, "Sarah Davis", 2));
-        clients.add(new Clients(3, "Amy Friendly", 1));
-        clients.add(new Clients(4, "Johny Smith", 1));
-        clients.add(new Clients(5, "Carol Spears", 2));
+        clients.put(1, new Clients(1, "Bob Jones", 1));
+        clients.put(2, new Clients(2, "Sarah Davis", 2));
+        clients.put(3, new Clients(3, "Amy Friendly", 1));
+        clients.put(4, new Clients(4, "Johny Smith", 1));
+        clients.put(5, new Clients(5, "Carol Spears", 2));
     }
 
     public static void DisplayMenu(){
         System.out.println("What would you like to do?");
         System.out.println("1. DISPLAY all clients.");
-        System.out.println("2. CHANGE a client's choice.");
-        System.out.println("3. EXIT the program.");
+        System.out.println("2. CREATE a new client.");
+        System.out.println("3. CHANGE a client's choice.");
+        System.out.println("4. EXIT the program.");
     }
     
+    // public static void DisplayClients(){
+    //     System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
+    //     for(Clients client : clients){
+    //         System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
+    //     }
+    // }
+
     public static void DisplayClients(){
         System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
-        for(Clients client : clients){
+        for(Map.Entry<Integer, Clients> entry : clients.entrySet()){
+            Clients client = entry.getValue();
             System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
         }
     }
 
+    public static void CreateClient(){
+        int serviceCode;
+        System.out.println("Enter the client's name: ");
+        String name = InputValidators.validateNameInput();
+        System.out.println("Enter the service code (1 = Brokerage, 2 = Retirement): ");
+        while(true){
+            serviceCode = InputValidators.validateNumericInput();
+            if(serviceCode == 1 || serviceCode == 2){
+                break;
+            } else{
+                System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
+            }
+        }
+        int clientId = clients.size() + 1;
+        int key = clientId;
+        clients.put(key, new Clients(clientId, name, serviceCode));
+        System.out.println("Client " + name + " has been added with ID " + clientId);
+    }
 
-    public static void ChangeClientChoice(int id){
-        // Find the client by client ID
-        Clients client = clients.stream().filter(c -> c.getClientId() == id).findFirst().orElse(null);
+    public static void ChangeClientChoice (int id){
+
+        Clients client = clients.get(id);
         if(client != null){
             System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
             int serviceCode;
             int oldServiceCode = client.getServiceCode();
             while(true){
                 serviceCode = InputValidators.validateNumericInput();
-                // Check to see if serviceCode input is a valid choice
                 if(serviceCode == 1 || serviceCode == 2){
-                    // Check if the client's choice is already set to the new service code
                     if(serviceCode == oldServiceCode){
                         System.out.println("Client's choice is already set to " + serviceCode + ". Please enter a different service code.");
                     } else
-                    break; // Exit the loop if a valid service code is entered
-                } 
-                else {
+                    break;
+                } else {
                     System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
                 }
             }
-
             client.setServiceCode(serviceCode);
             System.out.println("Client's choice has been updated from " + oldServiceCode + " to " + serviceCode);
         } else{
             System.out.println("Client not found.");
         }
+
     }
+
+    // public static void DeleteClient(){
+    //     System.out.println("Enter the ID of the client you would like to delete: ");
+    //     int clientId = InputValidators.validateNumericInput();
+    //     Clients client = clients.get(clientId);
+    //     if(client != null){
+    //         System.out.println("Are you sure you want to delete " + client.getName() + "? (Y/N)");
+    //         String confirmation = InputValidators.validateYesNoInput();
+    //         if(confirmation.equalsIgnoreCase("Y")){
+    //             clients.remove(clientId);
+    //             System.out.println("Client " + client.getName() + " has been deleted.");
+    //         } else{
+    //             System.out.println("Client deletion cancelled.");
+    //         }
+    //     } else{
+    //         System.out.println("Client not found.");
+    //     }
+    // }
+
+    // public static void ChangeClientChoice(int id){
+    //     // Find the client by client ID
+    //     Clients client = clients.stream().filter(c -> c.getClientId() == id).findFirst().orElse(null);
+    //     if(client != null){
+    //         System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
+    //         int serviceCode;
+    //         int oldServiceCode = client.getServiceCode();
+    //         while(true){
+    //             serviceCode = InputValidators.validateNumericInput();
+    //             // Check to see if serviceCode input is a valid choice
+    //             if(serviceCode == 1 || serviceCode == 2){
+    //                 // Check if the client's choice is already set to the new service code
+    //                 if(serviceCode == oldServiceCode){
+    //                     System.out.println("Client's choice is already set to " + serviceCode + ". Please enter a different service code.");
+    //                 } else
+    //                 break; // Exit the loop if a valid service code is entered
+    //             } 
+    //             else {
+    //                 System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
+    //             }
+    //         }
+
+    //         client.setServiceCode(serviceCode);
+    //         System.out.println("Client's choice has been updated from " + oldServiceCode + " to " + serviceCode);
+    //     } else{
+    //         System.out.println("Client not found.");
+    //     }
+    // }
 
 
     public static void main(String[] args) {
@@ -99,7 +179,7 @@ public class Main {
 
          LoadClients();
 
-         while(choice !=3){
+         while(choice !=4){
             DisplayMenu();
             choice = InputValidators.validateNumericInput();
             switch(choice){
@@ -107,11 +187,14 @@ public class Main {
                     DisplayClients();
                     break;
                 case 2:
+                    CreateClient();
+                    break;
+                case 3:
                     System.out.println("Enter the ID of the client you would like to change: ");
                     int clientId = InputValidators.validateNumericInput();
                     ChangeClientChoice(clientId);
                     break;
-                case 3:
+                case 4:
                     System.out.println("Exiting the program...");
                     break;
                 default:
