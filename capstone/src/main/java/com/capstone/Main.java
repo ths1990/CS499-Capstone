@@ -177,8 +177,9 @@ public class Main {
             }
          }
 
+         DbConnection.connect(args);
          LoadClients();
-
+         
          while(choice !=4){
             DisplayMenu();
             choice = InputValidators.validateNumericInput();

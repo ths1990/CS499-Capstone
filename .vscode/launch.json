@@ -3,6 +3,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "DbConnection",
+      "request": "launch",
+      "mainClass": "com.capstone.DbConnection",
+      "projectName": "capstone"
+    },
+    {
+      "type": "java",
+      "name": "MongoClientConnectionExample",
+      "request": "launch",
+      "mainClass": "com.capstone.MongoClientConnectionExample",
+      "projectName": "capstone"
+    },
+    {
+      "type": "java",
       "name": "Main",
       "request": "launch",
       "mainClass": "com.capstone.Main",

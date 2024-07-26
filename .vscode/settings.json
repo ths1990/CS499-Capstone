@@ -59,5 +59,6 @@
   "files.associations": {
     "iostream": "cpp",
     "string": "cpp"
-  }
+  },
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
