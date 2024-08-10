@@ -2,11 +2,15 @@ package com.capstone;
 //import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.mongodb.client.MongoDatabase;
+//import org.bson.types.ObjectId;
+//import org.bson.Document;
+
+import com.mongodb.client.MongoCollection;
 
 public class Main {
     // private static ArrayList<Clients> clients = new ArrayList<>();
-    private static Map<Integer, Clients> clients = new HashMap<>();
-    
+    private static Map<Integer, Client> clients = new HashMap<>();
 
     public static boolean CheckPermission(){
         System.out.println("Enter your username: ");
@@ -22,20 +26,30 @@ public class Main {
             return false;
         }
     }
-        // clients.add(new Clients(1, "Bob Jones", 1));
-        // clients.add(new Clients(2, "Sarah Davis", 2));
-        // clients.add(new Clients(3, "Amy Friendly", 1));
-        // clients.add(new Clients(4, "Johny Smith", 1));
-        // clients.add(new Clients(5, "Carol Spears", 2));
+
+    public static void LoadClients(){
+        DbConnection.connect();
+
+        MongoDatabase database = DbConnection.getDatabase("capstone-database-enhancement");
+        MongoCollection<Client> collection = DbConnection.getCollection("capstone-database-enhancement", "clients", Client.class);  
+        
+        for(Client client : collection.find()){
+            clients.put(client.getClientId(), client);
+
+            //Debugging the database load to ensure client names are loading
+           // System.out.println("Loaded client:" + client.getName());
+        }
+    }
+    
     
     // Using hardcoded clients for now to test the program
-    public static void LoadClients(){
-        clients.put(1, new Clients(1, "Bob Jones", 1));
-        clients.put(2, new Clients(2, "Sarah Davis", 2));
-        clients.put(3, new Clients(3, "Amy Friendly", 1));
-        clients.put(4, new Clients(4, "Johny Smith", 1));
-        clients.put(5, new Clients(5, "Carol Spears", 2));
-    }
+    // public static void LoadClients(){
+    //     clients.put(1, new Clients(new ObjectId(),1, "Bob Jones", 1));
+    //     clients.put(2, new Clients(new ObjectId(), 2, "Sarah Davis", 2));
+    //     clients.put(3, new Clients((3, "Amy Friendly", 1));
+    //     clients.put(4, new Clients(4, "Johny Smith", 1));
+    //     clients.put(5, new Clients(5, "Carol Spears", 2));
+    // }
 
     public static void DisplayMenu(){
         System.out.println("What would you like to do?");
@@ -54,34 +68,34 @@ public class Main {
 
     public static void DisplayClients(){
         System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
-        for(Map.Entry<Integer, Clients> entry : clients.entrySet()){
-            Clients client = entry.getValue();
+        for(Map.Entry<Integer, Client> entry : clients.entrySet()){
+            Client client = entry.getValue();
             System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
         }
     }
 
-    public static void CreateClient(){
-        int serviceCode;
-        System.out.println("Enter the client's name: ");
-        String name = InputValidators.validateNameInput();
-        System.out.println("Enter the service code (1 = Brokerage, 2 = Retirement): ");
-        while(true){
-            serviceCode = InputValidators.validateNumericInput();
-            if(serviceCode == 1 || serviceCode == 2){
-                break;
-            } else{
-                System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
-            }
-        }
-        int clientId = clients.size() + 1;
-        int key = clientId;
-        clients.put(key, new Clients(clientId, name, serviceCode));
-        System.out.println("Client " + name + " has been added with ID " + clientId);
-    }
+    // public static void CreateClient(){
+    //     int serviceCode;
+    //     System.out.println("Enter the client's name: ");
+    //     String name = InputValidators.validateNameInput();
+    //     System.out.println("Enter the service code (1 = Brokerage, 2 = Retirement): ");
+    //     while(true){
+    //         serviceCode = InputValidators.validateNumericInput();
+    //         if(serviceCode == 1 || serviceCode == 2){
+    //             break;
+    //         } else{
+    //             System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
+    //         }
+    //     }
+    //     int clientId = clients.size() + 1;
+    //     int key = clientId;
+    //     clients.put(key, new Clients(clientId, name, serviceCode));
+    //     System.out.println("Client " + name + " has been added with ID " + clientId);
+    // }
 
     public static void ChangeClientChoice (int id){
 
-        Clients client = clients.get(id);
+        Client client = clients.get(id);
         if(client != null){
             System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
             int serviceCode;
@@ -144,7 +158,7 @@ public class Main {
     //                 System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
     //             }
     //         }
-
+    //
     //         client.setServiceCode(serviceCode);
     //         System.out.println("Client's choice has been updated from " + oldServiceCode + " to " + serviceCode);
     //     } else{
@@ -177,7 +191,6 @@ public class Main {
             }
          }
 
-         DbConnection.connect(args);
          LoadClients();
          
          while(choice !=4){
@@ -188,7 +201,7 @@ public class Main {
                     DisplayClients();
                     break;
                 case 2:
-                    CreateClient();
+                    //CreateClient();
                     break;
                 case 3:
                     System.out.println("Enter the ID of the client you would like to change: ");
@@ -197,6 +210,7 @@ public class Main {
                     break;
                 case 4:
                     System.out.println("Exiting the program...");
+                    DbConnection.close();
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
