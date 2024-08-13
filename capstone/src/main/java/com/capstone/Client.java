@@ -16,15 +16,19 @@ public class Client {
     @BsonProperty("serviceCode")
     private int serviceCode;
 
+    @BsonProperty("isActive")
+    private boolean isActive;
+
     // No-argument constructor
     public Client() {}
 
     // Parameterized constructor
-    public Client(ObjectId id, int clientId, String name, int serviceCode) {
+    public Client(ObjectId id, int clientId, String name, int serviceCode,boolean isActive) {
         this.id = id;
         this.clientId = clientId;
         this.name = name;
         this.serviceCode = serviceCode;
+        this.isActive = isActive;
     }
 
     // Getters and Setters
@@ -59,4 +63,13 @@ public class Client {
     public void setServiceCode(int serviceCode) {
         this.serviceCode = serviceCode;
     }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
 }

@@ -1,16 +1,25 @@
 package com.capstone;
-//import java.util.ArrayList;
+
+//Map imports
 import java.util.HashMap;
 import java.util.Map;
-import com.mongodb.client.MongoDatabase;
-//import org.bson.types.ObjectId;
-//import org.bson.Document;
 
+//MongoDB imports
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 
 public class Main {
-    // private static ArrayList<Clients> clients = new ArrayList<>();
     private static Map<Integer, Client> clients = new HashMap<>();
+    private static MongoDatabase database;
+    private static MongoCollection<Client> collection;
+
+    private static void InitializeDatabase(){
+        DbConnection.connect();
+        database = DbConnection.getDatabase("capstone-database-enhancement");
+        collection = DbConnection.getCollection("capstone-database-enhancement", "clients", Client.class);
+    }
 
     public static boolean CheckPermission(){
         System.out.println("Enter your username: ");
@@ -26,77 +35,82 @@ public class Main {
             return false;
         }
     }
-
+// Load clients from the database into a HashMap
     public static void LoadClients(){
-        DbConnection.connect();
-
-        MongoDatabase database = DbConnection.getDatabase("capstone-database-enhancement");
-        MongoCollection<Client> collection = DbConnection.getCollection("capstone-database-enhancement", "clients", Client.class);  
-        
         for(Client client : collection.find()){
             clients.put(client.getClientId(), client);
-
             //Debugging the database load to ensure client names are loading
            // System.out.println("Loaded client:" + client.getName());
         }
     }
-    
-    
-    // Using hardcoded clients for now to test the program
-    // public static void LoadClients(){
-    //     clients.put(1, new Clients(new ObjectId(),1, "Bob Jones", 1));
-    //     clients.put(2, new Clients(new ObjectId(), 2, "Sarah Davis", 2));
-    //     clients.put(3, new Clients((3, "Amy Friendly", 1));
-    //     clients.put(4, new Clients(4, "Johny Smith", 1));
-    //     clients.put(5, new Clients(5, "Carol Spears", 2));
-    // }
 
     public static void DisplayMenu(){
         System.out.println("What would you like to do?");
-        System.out.println("1. DISPLAY all clients.");
+        System.out.println("1. DISPLAY clients.");
         System.out.println("2. CREATE a new client.");
         System.out.println("3. CHANGE a client's choice.");
-        System.out.println("4. EXIT the program.");
+        System.out.println("4. REACTIVATE/DEACTIVATE a client.");
+        System.out.println("5. EXIT the program.");
     }
-    
-    // public static void DisplayClients(){
-    //     System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
-    //     for(Clients client : clients){
-    //         System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
-    //     }
-    // }
 
-    public static void DisplayClients(){
-        System.out.println("ID Client's Name    Service Selected (1 = Brokerage, 2 = Retirement)\"");
-        for(Map.Entry<Integer, Client> entry : clients.entrySet()){
+    public static void DisplayClients(int filter) {
+        System.out.printf("%-5s %-20s %-30s%n", "ID", "Client's Name", "Service Selected (1 = Brokerage, 2 = Retirement)");
+        for (Map.Entry<Integer, Client> entry : clients.entrySet()) {
             Client client = entry.getValue();
-            System.out.println(client.getClientId() + ". " + client.getName() + " - " + client.getServiceCode());
+            boolean shouldDisplay = false;
+    
+            switch (filter) {
+                case 1:
+                    shouldDisplay = true; // Display all clients
+                    break;
+                case 2:
+                    shouldDisplay = client.isActive(); // Display active clients
+                    break;
+                case 3:
+                    shouldDisplay = !client.isActive(); // Display inactive clients
+                    break;
+                default:
+                    System.out.println("Invalid filter option.");
+                    return;
+            }
+    
+            if (shouldDisplay) {
+                System.out.printf("%-5d %-20s %-30d%n", client.getClientId(), client.getName(), client.getServiceCode());
+            }
         }
     }
 
-    // public static void CreateClient(){
-    //     int serviceCode;
-    //     System.out.println("Enter the client's name: ");
-    //     String name = InputValidators.validateNameInput();
-    //     System.out.println("Enter the service code (1 = Brokerage, 2 = Retirement): ");
-    //     while(true){
-    //         serviceCode = InputValidators.validateNumericInput();
-    //         if(serviceCode == 1 || serviceCode == 2){
-    //             break;
-    //         } else{
-    //             System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
-    //         }
-    //     }
-    //     int clientId = clients.size() + 1;
-    //     int key = clientId;
-    //     clients.put(key, new Clients(clientId, name, serviceCode));
-    //     System.out.println("Client " + name + " has been added with ID " + clientId);
-    // }
+    public static void CreateClient(){
+        int serviceCode;
+        System.out.println("Enter the client's name: ");
+        String name = InputValidators.validateNameInput();
+        System.out.println("Enter the service code (1 = Brokerage, 2 = Retirement): ");
+        while(true){
+            serviceCode = InputValidators.validateNumericInput();
+            if(serviceCode == 1 || serviceCode == 2){
+                break;
+            } else{
+                System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
+            }
+        }
+        int clientId = clients.size() + 1;
+        Client newClient = new Client(new ObjectId(), clientId, name, serviceCode,true);
+        collection.insertOne(newClient);
+        clients.put(clientId, newClient);
+        
+        System.out.println("Client " + name + " has been added with ID " + clientId);
+
+        
+    }
 
     public static void ChangeClientChoice (int id){
 
         Client client = clients.get(id);
         if(client != null){
+            if (!client.isActive()) {
+                System.out.println(client.getName() + " is inactive. Service code cannot be updated.");
+                return;
+            }
             System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
             int serviceCode;
             int oldServiceCode = client.getServiceCode();
@@ -113,59 +127,30 @@ public class Main {
             }
             client.setServiceCode(serviceCode);
             System.out.println("Client's choice has been updated from " + oldServiceCode + " to " + serviceCode);
+            Document query = new Document("clientId", id);
+            Document update = new Document("$set", new Document("serviceCode", serviceCode));
+            collection.updateOne(query,update);
+
         } else{
             System.out.println("Client not found.");
         }
-
     }
 
-    // public static void DeleteClient(){
-    //     System.out.println("Enter the ID of the client you would like to delete: ");
-    //     int clientId = InputValidators.validateNumericInput();
-    //     Clients client = clients.get(clientId);
-    //     if(client != null){
-    //         System.out.println("Are you sure you want to delete " + client.getName() + "? (Y/N)");
-    //         String confirmation = InputValidators.validateYesNoInput();
-    //         if(confirmation.equalsIgnoreCase("Y")){
-    //             clients.remove(clientId);
-    //             System.out.println("Client " + client.getName() + " has been deleted.");
-    //         } else{
-    //             System.out.println("Client deletion cancelled.");
-    //         }
-    //     } else{
-    //         System.out.println("Client not found.");
-    //     }
-    // }
-
-    // public static void ChangeClientChoice(int id){
-    //     // Find the client by client ID
-    //     Clients client = clients.stream().filter(c -> c.getClientId() == id).findFirst().orElse(null);
-    //     if(client != null){
-    //         System.out.println("Enter the new service code (1 = Brokerage, 2 = Retirement) for " + client.getName() + ": ");
-    //         int serviceCode;
-    //         int oldServiceCode = client.getServiceCode();
-    //         while(true){
-    //             serviceCode = InputValidators.validateNumericInput();
-    //             // Check to see if serviceCode input is a valid choice
-    //             if(serviceCode == 1 || serviceCode == 2){
-    //                 // Check if the client's choice is already set to the new service code
-    //                 if(serviceCode == oldServiceCode){
-    //                     System.out.println("Client's choice is already set to " + serviceCode + ". Please enter a different service code.");
-    //                 } else
-    //                 break; // Exit the loop if a valid service code is entered
-    //             } 
-    //             else {
-    //                 System.out.println("Invalid service code. Please enter 1 for Brokerage or 2 for Retirement.");
-    //             }
-    //         }
-    //
-    //         client.setServiceCode(serviceCode);
-    //         System.out.println("Client's choice has been updated from " + oldServiceCode + " to " + serviceCode);
-    //     } else{
-    //         System.out.println("Client not found.");
-    //     }
-    // }
-
+    public static void ChangeActiveStatus(int id) {
+        Client client = clients.get(id);
+        if (client != null) {
+            boolean newStatus = !client.isActive();
+            client.setIsActive(newStatus);
+            String status = newStatus ? "activated" : "deactivated";
+            System.out.println(client.getName() + " has been " + status + ".");
+            
+            Document query = new Document("clientId", id);
+            Document update = new Document("$set", new Document("isActive", newStatus));
+            collection.updateOne(query, update);
+        } else {
+            System.out.println("Client not found.");
+        }
+    }
 
     public static void main(String[] args) {
 
@@ -190,25 +175,34 @@ public class Main {
                 System.out.println("Too many failed login attempts. Please try again later.");
             }
          }
-
+         //Once authenticated, initialize the database and load the clients
+         InitializeDatabase();
          LoadClients();
          
-         while(choice !=4){
+         while(choice !=5){
             DisplayMenu();
+            int clientId;
             choice = InputValidators.validateNumericInput();
             switch(choice){
                 case 1:
-                    DisplayClients();
+                    System.out.println("Display: 1) All Clients 2) Active Clients 3) Inactive Clients");
+                    int filter = InputValidators.validateNumericInput();
+                    DisplayClients(filter);
                     break;
                 case 2:
-                    //CreateClient();
+                    CreateClient();
                     break;
                 case 3:
                     System.out.println("Enter the ID of the client you would like to change: ");
-                    int clientId = InputValidators.validateNumericInput();
+                    clientId = InputValidators.validateNumericInput();
                     ChangeClientChoice(clientId);
                     break;
                 case 4:
+                    System.out.println("Enter the ID of the client you would like to change: ");
+                    clientId = InputValidators.validateNumericInput();
+                    ChangeActiveStatus(clientId);
+                    break;
+                case 5:
                     System.out.println("Exiting the program...");
                     DbConnection.close();
                     break;
